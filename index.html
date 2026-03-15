@@ -161,97 +161,96 @@ canvas{
 <script>
 
 const NAME_COLOR = "#fcf5ed";
+
+// إحداثيات وحجم الخط لكل تصميم
+const TEMPLATES = {
+  "template1.png": { xRatio: 0.5, yRatio: 0.88, fontSize: 60 },
+  "template2.png": { xRatio: 0.5, yRatio: 0.88, fontSize: 60 },
+  "template3.png": { xRatio: 0.5, yRatio: 0.88, fontSize: 60 }
+};
+
 let selectedTemplate = "template1.png";
 
-const BASE_FONT_SIZE = 60;
-const MIN_FONT_SIZE = 40;
-
-/* مهم جدًا: نجهّز الخط قبل الرسم */
-const fontReady = document.fonts.load('800 60px GE_SS_Two_Bold');
-
 const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d");
+const ctx    = canvas.getContext("2d");
 const nameInput = document.getElementById("name");
-const genBtn = document.getElementById("gen");
-const dlBtn = document.getElementById("dl");
+const genBtn    = document.getElementById("gen");
+const dlBtn     = document.getElementById("dl");
 
 let lastUrl = null;
 
-function fitFont(text, maxWidth){
-  let size = BASE_FONT_SIZE;
-  while(size > MIN_FONT_SIZE){
+// دالة تضبط حجم الخط تلقائياً إذا الاسم طويل
+function calcFontSize(text, maxWidth, startSize){
+  let size = startSize;
+  while(size > 24){
     ctx.font = `800 ${size}px GE_SS_Two_Bold`;
-    if(ctx.measureText(text).width <= maxWidth) return size;
+    if(ctx.measureText(text).width <= maxWidth) break;
     size -= 2;
   }
-  return MIN_FONT_SIZE;
+  return size;
 }
 
 function generate(){
   const name = nameInput.value.trim();
   if(!name) return alert("اكتب الاسم");
 
+  const cfg = TEMPLATES[selectedTemplate];
+
   const img = new Image();
   img.src = selectedTemplate;
 
   img.onload = () => {
-    fontReady.then(() => {
+    canvas.width  = img.naturalWidth;
+    canvas.height = img.naturalHeight;
 
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
 
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      ctx.drawImage(img,0,0);
+    const X = canvas.width  * cfg.xRatio;
+    const Y = canvas.height * cfg.yRatio;
 
-      const X = (canvas.width / 2) - 27;
-      const Y = canvas.height * 0.78;
+    // أقصى عرض للنص = 80% من عرض البطاقة
+    const maxW    = canvas.width * 0.80;
+    const fontSize = calcFontSize(name, maxW, cfg.fontSize);
 
-      // ← هنا التعديل المهم
-      const maxWidth = canvas.width * 0.8;
-      const fontSize = fitFont(name, maxWidth);
+    ctx.font         = `800 ${fontSize}px GE_SS_Two_Bold`;
+    ctx.textAlign    = "center";
+    ctx.textBaseline = "middle";
+    ctx.direction    = "rtl";
+    ctx.fillStyle    = NAME_COLOR;
 
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.direction = "rtl";
-      ctx.fillStyle = NAME_COLOR;
+    ctx.shadowColor   = "rgba(0,0,0,.20)";
+    ctx.shadowBlur    = 6;
+    ctx.shadowOffsetY = 3;
 
-      ctx.font = `800 ${fontSize}px GE_SS_Two_Bold`;
+    ctx.fillText(name, X, Y);
 
-      ctx.shadowColor = "rgba(0,0,0,.15)";
-      ctx.shadowBlur = 4;
-      ctx.shadowOffsetY = 2;
-
-      ctx.fillText(name, X, Y);
-
-      lastUrl = canvas.toDataURL("image/png");
-      dlBtn.disabled = false;
-    });
+    lastUrl = canvas.toDataURL("image/png");
+    dlBtn.disabled = false;
   };
 
-  img.onerror = () => alert("تأكدي أن ملفات التصاميم موجودة بنفس الاسم.");
+  img.onerror = () => alert("تأكد أن ملفات التصاميم موجودة بنفس الاسم.");
 }
-
 
 function download(){
   if(!lastUrl) return;
   const a = document.createElement("a");
-  a.href = lastUrl;
+  a.href     = lastUrl;
   a.download = "بطاقة.png";
   a.click();
 }
 
 genBtn.onclick = generate;
-dlBtn.onclick = download;
+dlBtn.onclick  = download;
 
-document.querySelectorAll(".tpl-btn").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
+document.querySelectorAll(".tpl-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
     selectedTemplate = btn.dataset.img;
-
-    document.querySelectorAll(".tpl-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tpl-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
   });
 });
 
 </script>
 </body>
-</html>
+</
