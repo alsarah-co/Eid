@@ -164,7 +164,10 @@ const NAME_COLOR = "#fcf5ed";
 let selectedTemplate = "template1.png";
 
 const BASE_FONT_SIZE = 60;
-const MIN_FONT_SIZE = 80;
+const MIN_FONT_SIZE = 40;
+
+/* مهم جدًا: نجهّز الخط قبل الرسم */
+const fontReady = document.fonts.load('800 60px GE_SS_Two_Bold');
 
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
@@ -183,6 +186,7 @@ function fitFont(text, maxWidth){
   }
   return MIN_FONT_SIZE;
 }
+
 function generate(){
   const name = nameInput.value.trim();
   if(!name) return alert("اكتب الاسم");
@@ -191,36 +195,35 @@ function generate(){
   img.src = selectedTemplate;
 
   img.onload = () => {
+    fontReady.then(() => {
 
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.drawImage(img,0,0);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(img,0,0);
 
+      const X = (canvas.width / 2) - 27;
+      const Y = canvas.height * 0.78;
 
-    const X = (canvas.width / 2) - 27;
+      const fontSize = BASE_FONT_SIZE;
 
-    /* نزلنا الاسم شوي */
-    const Y = canvas.height * 0.78;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.direction = "rtl";
+      ctx.fillStyle = NAME_COLOR;
 
-    const fontSize = BASE_FONT_SIZE;
+      ctx.font = `800 ${fontSize}px GE_SS_Two_Bold`;
 
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.direction = "rtl";
-    ctx.fillStyle = NAME_COLOR;
+      ctx.shadowColor = "rgba(0,0,0,.15)";
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetY = 2;
 
-    ctx.font = `800 ${fontSize}px GE_SS_Two_Bold`;
+      ctx.fillText(name, X, Y);
 
-    ctx.shadowColor = "rgba(0,0,0,.15)";
-    ctx.shadowBlur = 4;
-    ctx.shadowOffsetY = 2;
-
-    ctx.fillText(name, X, Y);
-
-    lastUrl = canvas.toDataURL("image/png");
-    dlBtn.disabled = false;
+      lastUrl = canvas.toDataURL("image/png");
+      dlBtn.disabled = false;
+    });
   };
 
   img.onerror = () => alert("تأكدي أن ملفات التصاميم موجودة بنفس الاسم.");
