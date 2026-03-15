@@ -163,7 +163,7 @@ canvas{
 const NAME_COLOR = "#fcf5ed";
 let selectedTemplate = "template1.png";
 
-const BASE_FONT_SIZE = 150;
+const BASE_FONT_SIZE = 120;
 const MIN_FONT_SIZE = 80;
 
 const canvas = document.getElementById("c");
@@ -199,10 +199,10 @@ function generate(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(img,0,0);
 
-    const X = (canvas.width / 2) - 120;
+    const X = (canvas.width / 2) - 90;
 
     /* نزلنا الاسم شوي */
-    const Y = canvas.height * 0.52;
+    const Y = canvas.height * 0.70;
 
     const MAX_WIDTH = canvas.width * 0.60;
 
