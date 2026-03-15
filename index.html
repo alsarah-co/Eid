@@ -206,7 +206,9 @@ function generate(){
       const X = (canvas.width / 2) - 27;
       const Y = canvas.height * 0.78;
 
-      const fontSize = BASE_FONT_SIZE;
+      // ← هنا التعديل المهم
+      const maxWidth = canvas.width * 0.8;
+      const fontSize = fitFont(name, maxWidth);
 
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -228,6 +230,7 @@ function generate(){
 
   img.onerror = () => alert("تأكدي أن ملفات التصاميم موجودة بنفس الاسم.");
 }
+
 
 function download(){
   if(!lastUrl) return;
