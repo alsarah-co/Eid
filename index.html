@@ -1,198 +1,38 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>بطاقة تهنئة</title>
-
-<style>
-
-@font-face {
-  font-family: 'GE_SS_Two_Bold';
-  src: url('GE-SS-Two-Bold.otf') format('opentype');
-}
-
-body{
-  margin:0;
-  font-family:'GE_SS_Two_Bold', Arial, sans-serif;
-  background:#f4f4f4;
-}
-
-.wrap{
-  max-width:900px;
-  margin:30px auto;
-  padding:15px;
-}
-
-.card{
-  background:#fff;
-  padding:20px;
-  border-radius:16px;
-  box-shadow:0 10px 30px rgba(0,0,0,.08);
-}
-
-.top{
-  display:flex;
-  justify-content:flex-end;
-  margin-bottom:12px;
-}
-
-.logo{
-  height:46px;
-  width:auto;
-}
-
-.row{
-  display:flex;
-  gap:12px;
-  align-items:flex-end;
-  flex-wrap:wrap;
-}
-
-.field{
-  flex:1 1 420px;
-  min-width:260px;
-}
-
-label{
-  font-weight:bold;
-  margin-bottom:6px;
-  display:block;
-}
-
-input{
-  width:100%;
-  padding:12px 14px;
-  border-radius:10px;
-  border:1px solid #ddd;
-  font-size:16px;
-  box-sizing:border-box;
-}
-
-button{
-  padding:12px 18px;
-  border-radius:10px;
-  border:0;
-  font-weight:bold;
-  cursor:pointer;
-  flex:0 0 auto;
-  white-space:nowrap;
-}
-
-.primary{
-  background:#6b0f1a;
-  color:#fff;
-}
-
-.ghost{
-  background:#eee;
-  color:#433b65;
-}
-
-.templates{
-  margin-top:15px;
-  display:flex;
-  gap:10px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-
-.templates span{
-  font-size:13px;
-  color:#666;
-  font-weight:bold;
-}
-
-.tpl-btn{
-  padding:8px 12px;
-  border-radius:8px;
-  border:1px solid #ccc;
-  background:#f5f5f5;
-  cursor:pointer;
-  font-family:'GE_SS_Two_Bold', Arial, sans-serif;
-}
-
-.tpl-btn.active{
-  background:#6b0f1a;
-  color:#fff;
-  border-color:#6b0f1a;
-}
-
-canvas{
-  width:100%;
-  height:auto;
-  margin-top:20px;
-  border-radius:16px;
-}
-
-</style>
-</head>
-
-<body>
-<div class="wrap">
-  <div class="card">
-
-    <div class="top">
-      <img src="logo.png" class="logo" alt="Logo">
-    </div>
-
-    <div class="row">
-      <div class="field">
-        <label>اسم الموظف</label>
-        <input id="name" placeholder="اكتب الاسم هنا" />
-      </div>
-
-      <button class="primary" id="gen">إنشاء البطاقة</button>
-      <button class="ghost" id="dl" disabled>تحميل</button>
-    </div>
-
-    <div class="templates">
-      <span>اختر التصميم:</span>
-      <button type="button" class="tpl-btn active" data-img="template1.png">تصميم 1</button>
-      <button type="button" class="tpl-btn" data-img="template2.png">تصميم 2</button>
-      <button type="button" class="tpl-btn" data-img="template3.png">تصميم 3</button>
-    </div>
-
-    <canvas id="c"></canvas>
-
-  </div>
-</div>
-
 <script>
 
-// ── إعدادات كل تصميم ──────────────────────────────────────────
 const TEMPLATES = {
-  "template1.png": {
-    xRatio   : 0.5,
-    yRatio   : 0.88,
-    fontSize : 70,
-    color    : "#3b2a1a"   // لون غامق يظهر على الخلفية الذهبية
-  },
-  "template2.png": {
-    xRatio   : 0.5,
-    yRatio   : 0.88,
-    fontSize : 70,
-    color    : "#fcf5ed"   // أبيض/كريمي على الخلفية الخضراء الداكنة
-  },
-  "template3.png": {
-    xRatio   : 0.5,
-    yRatio   : 0.88,
-    fontSize : 70,
-    color    : "#fcf5ed"   // أبيض/كريمي على الخلفية البرغندي
-  }
+  "template1.png": { xRatio: 0.5, yRatio: 0.88, fontSize: 70, color: "#3b2a1a" },
+  "template2.png": { xRatio: 0.5, yRatio: 0.88, fontSize: 70, color: "#fcf5ed" },
+  "template3.png": { xRatio: 0.5, yRatio: 0.88, fontSize: 70, color: "#fcf5ed" }
 };
 
 let selectedTemplate = "template1.png";
+let fontReady = false;
 
 const canvas    = document.getElementById("c");
 const ctx       = canvas.getContext("2d");
 const nameInput = document.getElementById("name");
 const genBtn    = document.getElementById("gen");
 const dlBtn     = document.getElementById("dl");
-
 let lastUrl = null;
 
-// ── تصغير الخط تلقائياً لو الاسم طويل ─────────────────────────
+// ── تحميل الخط مرة وحدة عند فتح الصفحة ──────────────────────
+const testFont = new FontFace(
+  "GE_SS_Two_Bold",
+  "url('GE-SS-Two-Bold.otf')",
+  { weight: "800" }
+);
+
+testFont.load().then(loadedFace => {
+  document.fonts.add(loadedFace);
+  fontReady = true;
+  console.log("✅ الخط جاهز");
+}).catch(err => {
+  console.warn("⚠️ فشل تحميل الخط:", err);
+  fontReady = true; // نكمل حتى لو فشل
+});
+
+// ── تصغير الخط تلقائياً ───────────────────────────────────────
 function calcFontSize(text, maxWidth, startSize){
   let size = startSize;
   ctx.font = `800 ${size}px GE_SS_Two_Bold`;
@@ -203,77 +43,77 @@ function calcFontSize(text, maxWidth, startSize){
   return size;
 }
 
-// ── الدالة الرئيسية ────────────────────────────────────────────
+// ── رسم الاسم على الكانفاس ────────────────────────────────────
+function drawName(img, name, cfg){
+  canvas.width  = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0);
+
+  const X     = canvas.width  * cfg.xRatio;
+  const Y     = canvas.height * cfg.yRatio;
+  const maxW  = canvas.width  * 0.80;
+  const fSize = calcFontSize(name, maxW, cfg.fontSize);
+
+  ctx.save();
+  ctx.font         = `800 ${fSize}px GE_SS_Two_Bold`;
+  ctx.textAlign    = "center";
+  ctx.textBaseline = "middle";
+  ctx.direction    = "rtl";
+  ctx.fillStyle    = cfg.color;
+  ctx.shadowColor   = "rgba(0,0,0,0.25)";
+  ctx.shadowBlur    = 8;
+  ctx.shadowOffsetY = 3;
+  ctx.fillText(name, X, Y);
+  ctx.shadowColor = "transparent";
+  ctx.strokeStyle = cfg.color;
+  ctx.lineWidth   = 1.5;
+  ctx.strokeText(name, X, Y);
+  ctx.restore();
+
+  lastUrl = canvas.toDataURL("image/png");
+  dlBtn.disabled = false;
+}
+
+// ── الدالة الرئيسية ───────────────────────────────────────────
 function generate(){
   const name = nameInput.value.trim();
   if(!name) return alert("اكتب الاسم");
 
   const cfg = TEMPLATES[selectedTemplate];
 
-  // ① انتظر تحميل الخط أولاً
-  document.fonts.load(`800 ${cfg.fontSize}px GE_SS_Two_Bold`).then(() => {
-
+  const tryDraw = () => {
     const img = new Image();
-    img.src = selectedTemplate + "?v=" + Date.now(); // منع cache
-
-    img.onload = () => {
-      canvas.width  = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
-
-      const X      = canvas.width  * cfg.xRatio;
-      const Y      = canvas.height * cfg.yRatio;
-      const maxW   = canvas.width  * 0.80;
-      const fSize  = calcFontSize(name, maxW, cfg.fontSize);
-
-      // ② ارسم الاسم
-      ctx.save();
-      ctx.font         = `800 ${fSize}px GE_SS_Two_Bold`;
-      ctx.textAlign    = "center";
-      ctx.textBaseline = "middle";
-      ctx.direction    = "rtl";
-
-      // ظل خفيف
-      ctx.shadowColor   = "rgba(0,0,0,0.25)";
-      ctx.shadowBlur    = 8;
-      ctx.shadowOffsetY = 3;
-
-      // fill
-      ctx.fillStyle = cfg.color;
-      ctx.fillText(name, X, Y);
-
-      // stroke خفيف يعطي ثقل للخط
-      ctx.shadowColor = "transparent";
-      ctx.strokeStyle = cfg.color;
-      ctx.lineWidth   = 1.5;
-      ctx.strokeText(name, X, Y);
-
-      ctx.restore();
-
-      lastUrl = canvas.toDataURL("image/png");
-      dlBtn.disabled = false;
-    };
-
+    img.src = selectedTemplate;
+    img.onload = () => drawName(img, name, cfg);
     img.onerror = () => alert("تأكد أن ملفات التصاميم موجودة بنفس الاسم.");
+  };
 
-  });
+  // لو الخط جاهز ارسم مباشرة، لو لا انتظر
+  if(fontReady){
+    tryDraw();
+  } else {
+    const wait = setInterval(() => {
+      if(fontReady){
+        clearInterval(wait);
+        tryDraw();
+      }
+    }, 100);
+  }
 }
 
-// ── تحميل الصورة ───────────────────────────────────────────────
 function download(){
   if(!lastUrl) return;
-  const a      = document.createElement("a");
-  a.href       = lastUrl;
-  a.download   = "بطاقة.png";
+  const a    = document.createElement("a");
+  a.href     = lastUrl;
+  a.download = "بطاقة.png";
   a.click();
 }
 
 genBtn.onclick = generate;
 dlBtn.onclick  = download;
 
-// ── اختيار التصميم ─────────────────────────────────────────────
 document.querySelectorAll(".tpl-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     selectedTemplate = btn.dataset.img;
@@ -284,5 +124,3 @@ document.querySelectorAll(".tpl-btn").forEach(btn => {
 });
 
 </script>
-</body>
-</html>
