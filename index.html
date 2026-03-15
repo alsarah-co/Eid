@@ -101,13 +101,13 @@ button{
 .tpl-btn[data-img="template1.png"] { background:#1a4a3a; color:#fff; border-color:#1a4a3a; }
 .tpl-btn[data-img="template2.png"] { background:#6b0f1a; color:#fff; border-color:#6b0f1a; }
 .tpl-btn[data-img="template3.png"] { background:#b8960c; color:#fff; border-color:#b8960c; }
-}
+
 canvas{
   width:100%;
   height:auto;
   margin-top:20px;
   border-radius:16px;
-    display:block;
+  display:block;
 }
 
 </style>
@@ -145,7 +145,7 @@ canvas{
 <script>
 
 const TEMPLATES = {
-  "template1.png": { xRatio: 0.5, yRatio: 0.77, fontSize: 80, color: "#fcf5ed" }, // غيرنا 70 → 50
+  "template1.png": { xRatio: 0.5, yRatio: 0.77, fontSize: 80, color: "#fcf5ed" },
   "template2.png": { xRatio: 0.5, yRatio: 0.77, fontSize: 90, color: "#fcf5ed" },
   "template3.png": { xRatio: 0.5, yRatio: 0.77, fontSize: 90, color: "#fcf5ed" }
 };
@@ -160,7 +160,6 @@ const genBtn    = document.getElementById("gen");
 const dlBtn     = document.getElementById("dl");
 let lastUrl = null;
 
-// تحميل الخط مرة وحدة عند فتح الصفحة
 const testFont = new FontFace(
   "GE_SS_Two_Bold",
   "url('GE-SS-Two-Bold.otf')",
