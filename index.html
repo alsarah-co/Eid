@@ -160,47 +160,61 @@ canvas{
 
 <script>
 
-const NAME_COLOR = "#fcf5ed";
-
-// إحداثيات وحجم الخط لكل تصميم
+// ── إعدادات كل تصميم ──────────────────────────────────────────
 const TEMPLATES = {
-  "template1.png": { xRatio: 0.5, yRatio: 0.88, fontSize: 60 },
-  "template2.png": { xRatio: 0.5, yRatio: 0.88, fontSize: 60 },
-  "template3.png": { xRatio: 0.5, yRatio: 0.88, fontSize: 60 }
+  "template1.png": {
+    xRatio   : 0.5,
+    yRatio   : 0.88,
+    fontSize : 70,
+    color    : "#3b2a1a"   // لون غامق يظهر على الخلفية الذهبية
+  },
+  "template2.png": {
+    xRatio   : 0.5,
+    yRatio   : 0.88,
+    fontSize : 70,
+    color    : "#fcf5ed"   // أبيض/كريمي على الخلفية الخضراء الداكنة
+  },
+  "template3.png": {
+    xRatio   : 0.5,
+    yRatio   : 0.88,
+    fontSize : 70,
+    color    : "#fcf5ed"   // أبيض/كريمي على الخلفية البرغندي
+  }
 };
 
 let selectedTemplate = "template1.png";
 
-const canvas = document.getElementById("c");
-const ctx    = canvas.getContext("2d");
+const canvas    = document.getElementById("c");
+const ctx       = canvas.getContext("2d");
 const nameInput = document.getElementById("name");
 const genBtn    = document.getElementById("gen");
 const dlBtn     = document.getElementById("dl");
 
 let lastUrl = null;
 
-// دالة تضبط حجم الخط تلقائياً إذا الاسم طويل
+// ── تصغير الخط تلقائياً لو الاسم طويل ─────────────────────────
 function calcFontSize(text, maxWidth, startSize){
   let size = startSize;
-  while(size > 24){
-    ctx.font = `800 ${size}px GE_SS_Two_Bold`;
-    if(ctx.measureText(text).width <= maxWidth) break;
+  ctx.font = `800 ${size}px GE_SS_Two_Bold`;
+  while(size > 24 && ctx.measureText(text).width > maxWidth){
     size -= 2;
+    ctx.font = `800 ${size}px GE_SS_Two_Bold`;
   }
   return size;
 }
 
+// ── الدالة الرئيسية ────────────────────────────────────────────
 function generate(){
   const name = nameInput.value.trim();
   if(!name) return alert("اكتب الاسم");
 
   const cfg = TEMPLATES[selectedTemplate];
 
-  // ① تحميل الخط أولاً، ثم نرسم
-  document.fonts.load(`800 60px GE_SS_Two_Bold`).then(() => {
+  // ① انتظر تحميل الخط أولاً
+  document.fonts.load(`800 ${cfg.fontSize}px GE_SS_Two_Bold`).then(() => {
 
     const img = new Image();
-    img.src = selectedTemplate;
+    img.src = selectedTemplate + "?v=" + Date.now(); // منع cache
 
     img.onload = () => {
       canvas.width  = img.naturalWidth;
@@ -209,23 +223,34 @@ function generate(){
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
 
-      const X = canvas.width  * cfg.xRatio;
-      const Y = canvas.height * cfg.yRatio;
+      const X      = canvas.width  * cfg.xRatio;
+      const Y      = canvas.height * cfg.yRatio;
+      const maxW   = canvas.width  * 0.80;
+      const fSize  = calcFontSize(name, maxW, cfg.fontSize);
 
-      const maxW     = canvas.width * 0.80;
-      const fontSize = calcFontSize(name, maxW, cfg.fontSize);
-
-      ctx.font         = `800 ${fontSize}px GE_SS_Two_Bold`;
+      // ② ارسم الاسم
+      ctx.save();
+      ctx.font         = `800 ${fSize}px GE_SS_Two_Bold`;
       ctx.textAlign    = "center";
       ctx.textBaseline = "middle";
       ctx.direction    = "rtl";
-      ctx.fillStyle    = NAME_COLOR;
 
-      ctx.shadowColor   = "rgba(0,0,0,.20)";
-      ctx.shadowBlur    = 6;
+      // ظل خفيف
+      ctx.shadowColor   = "rgba(0,0,0,0.25)";
+      ctx.shadowBlur    = 8;
       ctx.shadowOffsetY = 3;
 
+      // fill
+      ctx.fillStyle = cfg.color;
       ctx.fillText(name, X, Y);
+
+      // stroke خفيف يعطي ثقل للخط
+      ctx.shadowColor = "transparent";
+      ctx.strokeStyle = cfg.color;
+      ctx.lineWidth   = 1.5;
+      ctx.strokeText(name, X, Y);
+
+      ctx.restore();
 
       lastUrl = canvas.toDataURL("image/png");
       dlBtn.disabled = false;
@@ -235,25 +260,29 @@ function generate(){
 
   });
 }
+
+// ── تحميل الصورة ───────────────────────────────────────────────
 function download(){
   if(!lastUrl) return;
-  const a = document.createElement("a");
-  a.href     = lastUrl;
-  a.download = "بطاقة.png";
+  const a      = document.createElement("a");
+  a.href       = lastUrl;
+  a.download   = "بطاقة.png";
   a.click();
 }
 
 genBtn.onclick = generate;
 dlBtn.onclick  = download;
 
+// ── اختيار التصميم ─────────────────────────────────────────────
 document.querySelectorAll(".tpl-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     selectedTemplate = btn.dataset.img;
-    document.querySelectorAll(".tpl-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tpl-btn")
+            .forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
   });
 });
 
 </script>
 </body>
-</
+</html>
