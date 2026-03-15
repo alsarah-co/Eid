@@ -196,42 +196,45 @@ function generate(){
 
   const cfg = TEMPLATES[selectedTemplate];
 
-  const img = new Image();
-  img.src = selectedTemplate;
+  // ① تحميل الخط أولاً، ثم نرسم
+  document.fonts.load(`800 60px GE_SS_Two_Bold`).then(() => {
 
-  img.onload = () => {
-    canvas.width  = img.naturalWidth;
-    canvas.height = img.naturalHeight;
+    const img = new Image();
+    img.src = selectedTemplate;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0);
+    img.onload = () => {
+      canvas.width  = img.naturalWidth;
+      canvas.height = img.naturalHeight;
 
-    const X = canvas.width  * cfg.xRatio;
-    const Y = canvas.height * cfg.yRatio;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
 
-    // أقصى عرض للنص = 80% من عرض البطاقة
-    const maxW    = canvas.width * 0.80;
-    const fontSize = calcFontSize(name, maxW, cfg.fontSize);
+      const X = canvas.width  * cfg.xRatio;
+      const Y = canvas.height * cfg.yRatio;
 
-    ctx.font         = `800 ${fontSize}px GE_SS_Two_Bold`;
-    ctx.textAlign    = "center";
-    ctx.textBaseline = "middle";
-    ctx.direction    = "rtl";
-    ctx.fillStyle    = NAME_COLOR;
+      const maxW     = canvas.width * 0.80;
+      const fontSize = calcFontSize(name, maxW, cfg.fontSize);
 
-    ctx.shadowColor   = "rgba(0,0,0,.20)";
-    ctx.shadowBlur    = 6;
-    ctx.shadowOffsetY = 3;
+      ctx.font         = `800 ${fontSize}px GE_SS_Two_Bold`;
+      ctx.textAlign    = "center";
+      ctx.textBaseline = "middle";
+      ctx.direction    = "rtl";
+      ctx.fillStyle    = NAME_COLOR;
 
-    ctx.fillText(name, X, Y);
+      ctx.shadowColor   = "rgba(0,0,0,.20)";
+      ctx.shadowBlur    = 6;
+      ctx.shadowOffsetY = 3;
 
-    lastUrl = canvas.toDataURL("image/png");
-    dlBtn.disabled = false;
-  };
+      ctx.fillText(name, X, Y);
 
-  img.onerror = () => alert("تأكد أن ملفات التصاميم موجودة بنفس الاسم.");
+      lastUrl = canvas.toDataURL("image/png");
+      dlBtn.disabled = false;
+    };
+
+    img.onerror = () => alert("تأكد أن ملفات التصاميم موجودة بنفس الاسم.");
+
+  });
 }
-
 function download(){
   if(!lastUrl) return;
   const a = document.createElement("a");
