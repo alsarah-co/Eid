@@ -183,7 +183,7 @@ function fitFont(text, maxWidth){
   }
   return MIN_FONT_SIZE;
 }
-async function generate(){
+function generate(){
   const name = nameInput.value.trim();
   if(!name) return alert("اكتب الاسم");
 
@@ -197,7 +197,7 @@ async function generate(){
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(img,0,0);
-    await document.fonts.load('800 150px GE_SS_Two_Bold');
+
 
     const X = (canvas.width / 2) - 27;
 
