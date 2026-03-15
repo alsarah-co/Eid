@@ -7,13 +7,13 @@
 
 <style>
 @font-face {
-  font-family: 'GE_SS_Two_Bold';
-  src: url('GE-SS-Two-Bold.otf') format('opentype');
+  font-family: 'GE_SS_Two_Light';
+  src: url('GE_SS_Two_Light.otf') format('opentype');
 }
 
 body{
   margin:0;
-  font-family:'GE_SS_Two_Bold', Arial, sans-serif;
+  font-family:'GE_SS_Two_Light', Arial, sans-serif;
   background:#f4f4f4;
 }
 
@@ -79,7 +79,7 @@ button{
 }
 
 .primary{
-  background:#433b65;
+  background:#6b0f1a;
   color:#fff;
 }
 
@@ -94,32 +94,34 @@ button{
   color:#666;
 }
 
-/* اختيار اللون */
-.color-picker{
-  margin-top:10px;
+/* اختيار التصميم */
+.templates{
+  margin-top:15px;
   display:flex;
-  align-items:center;
   gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
 }
 
-.color-picker span{
+.templates span{
   font-size:13px;
   color:#666;
   font-weight:bold;
 }
 
-.color-btn{
-  width:28px;
-  height:28px;
-  border-radius:50%;
-  border:2px solid #ddd;
+.tpl-btn{
+  padding:8px 12px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  background:#f5f5f5;
   cursor:pointer;
-  padding:0;
+  font-family:'GE_SS_Two_Light', Arial, sans-serif;
 }
 
-.color-btn.active{
-  outline:3px solid rgba(67,59,101,.25);
-  border-color:#433b65;
+.tpl-btn.active{
+  background:#6b0f1a;
+  color:#fff;
+  border-color:#6b0f1a;
 }
 
 canvas{
@@ -143,22 +145,6 @@ canvas{
       <div class="field">
         <label>اسم الموظف</label>
         <input id="name" placeholder="اكتب الاسم هنا" />
-
-        <!-- اختيار اللون (لونين فقط) -->
-        <div class="color-picker">
-          <span>لون الاسم:</span>
-
-          <button type="button" class="color-btn active"
-            data-color="#433b65"
-            style="background:#433b65;">
-          </button>
-
-          <button type="button" class="color-btn"
-            data-color="#ffffff"
-            style="background:#ffffff; border:2px solid #bbb;">
-          </button>
-        </div>
-
         <div class="note">
           ملاحظة: لإظهار التصميم بشكل أجمل يُفضّل استخدام الاسم الثنائي.
         </div>
@@ -168,15 +154,23 @@ canvas{
       <button class="ghost" id="dl" disabled>تحميل</button>
     </div>
 
+    <div class="templates">
+      <span>اختر التصميم:</span>
+      <button type="button" class="tpl-btn active" data-img="template1.png">تصميم 1</button>
+      <button type="button" class="tpl-btn" data-img="template2.png">تصميم 2</button>
+      <button type="button" class="tpl-btn" data-img="template3.png">تصميم 3</button>
+    </div>
+
     <canvas id="c"></canvas>
 
   </div>
 </div>
 
 <script>
-let NAME_COLOR = "#433b65";
+const NAME_COLOR = "#fcf5ed";
+let selectedTemplate = "template1.png";
 
-const BASE_FONT_SIZE = 130;
+const BASE_FONT_SIZE = 150;
 const MIN_FONT_SIZE = 80;
 
 const canvas = document.getElementById("c");
@@ -190,7 +184,7 @@ let lastUrl = null;
 function fitFont(text, maxWidth){
   let size = BASE_FONT_SIZE;
   while(size > MIN_FONT_SIZE){
-    ctx.font = `800 ${size}px GE_SS_Two_Bold`;
+    ctx.font = `400 ${size}px GE_SS_Two_Light`;
     if(ctx.measureText(text).width <= maxWidth) return size;
     size -= 2;
   }
@@ -202,7 +196,7 @@ function generate(){
   if(!name) return alert("اكتب الاسم");
 
   const img = new Image();
-  img.src = "template.png";
+  img.src = selectedTemplate;
 
   img.onload = () => {
 
@@ -212,8 +206,8 @@ function generate(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(img,0,0);
 
-    const X = (canvas.width / 2) - 100;
-    const Y = canvas.height * 0.797;
+    const X = (canvas.width / 2) - 120;
+    const Y = canvas.height * 0.475;
 
     const MAX_WIDTH = canvas.width * 0.60;
 
@@ -223,7 +217,7 @@ function generate(){
     ctx.textBaseline = "middle";
     ctx.direction = "rtl";
     ctx.fillStyle = NAME_COLOR;
-    ctx.font = `800 ${fontSize}px GE_SS_Two_Bold`;
+    ctx.font = `400 ${fontSize}px GE_SS_Two_Light`;
 
     ctx.shadowColor = "rgba(0,0,0,.15)";
     ctx.shadowBlur = 4;
@@ -234,6 +228,8 @@ function generate(){
     lastUrl = canvas.toDataURL("image/png");
     dlBtn.disabled = false;
   };
+
+  img.onerror = () => alert("تأكدي أن ملف التصميم موجود بنفس الاسم داخل المستودع.");
 }
 
 function download(){
@@ -247,10 +243,11 @@ function download(){
 genBtn.onclick = generate;
 dlBtn.onclick = download;
 
-document.querySelectorAll(".color-btn").forEach(btn=>{
+document.querySelectorAll(".tpl-btn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
-    NAME_COLOR = btn.dataset.color;
-    document.querySelectorAll(".color-btn").forEach(b=>b.classList.remove("active"));
+    selectedTemplate = btn.dataset.img;
+
+    document.querySelectorAll(".tpl-btn").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
   });
 });
